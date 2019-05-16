@@ -437,9 +437,9 @@ open class WrappedSimpleFunctionDescriptor(
     }
 }
 
-class WrappedFunctionDescriptorWithContainerSource : WrappedSimpleFunctionDescriptor(), DescriptorWithContainerSource {
-    override var containerSource: DeserializedContainerSource? = null
-}
+class WrappedFunctionDescriptorWithContainerSource(
+    override val containerSource: DeserializedContainerSource
+) : WrappedSimpleFunctionDescriptor(), DescriptorWithContainerSource
 
 open class WrappedClassConstructorDescriptor(
     annotations: Annotations = Annotations.EMPTY,
@@ -840,9 +840,9 @@ open class WrappedPropertyDescriptor(
     override fun <V : Any?> getUserData(key: CallableDescriptor.UserDataKey<V>?): V? = null
 }
 
-class WrappedPropertyDescriptorWithContainerSource : WrappedPropertyDescriptor(), DescriptorWithContainerSource {
-    override var containerSource: DeserializedContainerSource? = null
-}
+class WrappedPropertyDescriptorWithContainerSource(
+    override var containerSource: DeserializedContainerSource
+) : WrappedPropertyDescriptor(), DescriptorWithContainerSource
 
 open class WrappedFieldDescriptor(
     annotations: Annotations = Annotations.EMPTY,
