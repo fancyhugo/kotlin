@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.descriptors.FirPackageFragmentDescriptor
 import org.jetbrains.kotlin.fir.expressions.FirVariable
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.resolve.FirSymbolProvider
+import org.jetbrains.kotlin.fir.resolve.getOrPut
 import org.jetbrains.kotlin.fir.service
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.ir.declarations.*
@@ -138,7 +139,17 @@ class Fir2IrDeclarationStorage(
             localStorage.putLocalClass(regularClass, created)
             return created
         }
-        return classCache.getOrPut(regularClass, ::create)
+        return classCache.getOrPut(regularClass, { create() }) {
+            val irClass = it
+            for (superTypeRef in regularClass.superTypeRefs) {
+                irClass.superTypes += superTypeRef.toIrType(session, this@Fir2IrDeclarationStorage)
+            }
+            for ((index, typeParameter) in regularClass.typeParameters.withIndex()) {
+                irClass.typeParameters += getIrTypeParameter(typeParameter, index).apply {
+                    parent = irClass
+                }
+            }
+        }
     }
 
     fun getIrAnonymousObject(anonymousObject: FirAnonymousObject): IrClass {
