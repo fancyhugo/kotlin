@@ -154,6 +154,12 @@ class IDELightClassGenerationSupport(private val project: Project) : LightClassG
 
 
         if (declaration is KtClassOrObject) {
+
+            val classAnnotations = resolveToDescriptor(declaration)?.annotations
+            if (classAnnotations !== null && classAnnotations.hasAnnotation(FqName("kotlinx.android.parcel.Parcelize"))) {
+                return declaration
+            }
+
             declaration.primaryConstructor?.let { findTooComplexDeclaration(it) }?.let { return it }
 
             for (d in declaration.declarations) {
