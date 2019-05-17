@@ -126,7 +126,7 @@ class LocalDeclarationsLowering(
         }
     }
 
-    private class LocalFunctionContext(override val declaration: IrFunction) : LocalContextWithClosureAsParameters() {
+    private class LocalFunctionContext(override val declaration: IrSimpleFunction) : LocalContextWithClosureAsParameters() {
         lateinit var closure: Closure
 
         override lateinit var transformedDeclaration: IrSimpleFunction
@@ -513,7 +513,7 @@ class LocalDeclarationsLowering(
             )
 
         private fun createLiftedDeclaration(localFunctionContext: LocalFunctionContext) {
-            val oldDeclaration = localFunctionContext.declaration as IrSimpleFunction
+            val oldDeclaration = localFunctionContext.declaration
 
             val memberOwner = memberDeclaration.parent
             val newDescriptor = WrappedSimpleFunctionDescriptor(oldDeclaration.descriptor)
@@ -725,8 +725,8 @@ class LocalDeclarationsLowering(
                     element.acceptChildrenVoid(this)
                 }
 
-                override fun visitFunction(declaration: IrFunction) {
-                    super.visitFunction(declaration)
+                override fun visitSimpleFunction(declaration: IrSimpleFunction) {
+                    super.visitSimpleFunction(declaration)
 
                     if (declaration.visibility == Visibilities.LOCAL) {
                         val localFunctionContext = LocalFunctionContext(declaration)
