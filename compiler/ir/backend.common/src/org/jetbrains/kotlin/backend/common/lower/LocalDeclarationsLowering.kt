@@ -185,7 +185,7 @@ class LocalDeclarationsLowering(
             collectLocalDeclarations()
             if (localFunctions.isEmpty() && localClasses.isEmpty()) return listOf(memberDeclaration)
 
-            collectClosures()
+            collectClosureForLocalDeclarations()
 
             transformDeclarations()
 
@@ -706,7 +706,7 @@ class LocalDeclarationsLowering(
                 declaration.name
 
 
-        private fun collectClosures() {
+        private fun collectClosureForLocalDeclarations() {
             val annotator = ClosureAnnotator(memberDeclaration)
 
             localFunctions.forEach { (declaration, context) ->
@@ -726,7 +726,7 @@ class LocalDeclarationsLowering(
                 }
 
                 override fun visitFunction(declaration: IrFunction) {
-                    declaration.acceptChildrenVoid(this)
+                    super.visitFunction(declaration)
 
                     if (declaration.visibility == Visibilities.LOCAL) {
                         val localFunctionContext = LocalFunctionContext(declaration)
@@ -740,7 +740,7 @@ class LocalDeclarationsLowering(
                 }
 
                 override fun visitConstructor(declaration: IrConstructor) {
-                    declaration.acceptChildrenVoid(this)
+                    super.visitConstructor(declaration)
 
                     assert(declaration.visibility != Visibilities.LOCAL)
 
@@ -750,7 +750,7 @@ class LocalDeclarationsLowering(
                 }
 
                 override fun visitClass(declaration: IrClass) {
-                    declaration.acceptChildrenVoid(this)
+                    super.visitClass(declaration)
 
                     if (declaration.isInner) return
 
