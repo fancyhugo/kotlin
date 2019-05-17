@@ -191,11 +191,11 @@ class LocalDeclarationsLowering(
 
             rewriteDeclarations()
 
-            val rewrittenDeclarations = collectRewrittenDeclarations()
-            rewrittenDeclarations.forEach {
-                it.patchDeclarationParents(memberDeclaration.parent)
+            return collectRewrittenDeclarations().apply {
+                forEach { newDeclaration ->
+                    newDeclaration.patchDeclarationParents(memberDeclaration.parent)
+                }
             }
-            return rewrittenDeclarations
         }
 
         private fun collectRewrittenDeclarations(): ArrayList<IrDeclaration> =
@@ -415,7 +415,7 @@ class LocalDeclarationsLowering(
 
             assert(constructorsCallingSuper.any()) { "Expected at least one constructor calling super; class: $irClass" }
 
-            localClassContext.capturedValueToField.forEach { capturedValue, field ->
+            localClassContext.capturedValueToField.forEach { (capturedValue, field) ->
                 val startOffset = irClass.startOffset
                 val endOffset = irClass.endOffset
                 irClass.declarations.add(field)
@@ -574,7 +574,7 @@ class LocalDeclarationsLowering(
                 val p = capturedValue.owner
                 IrValueParameterImpl(
                     p.startOffset, p.endOffset, BOUND_VALUE_PARAMETER, IrValueParameterSymbolImpl(parameterDescriptor),
-                    suggestNameForCapturedValue(p), i, p.type, null, false, false
+                    suggestNameForCapturedValue(p), i, p.type, null, isCrossinline = false, isNoinline = false
                 ).also {
                     parameterDescriptor.bind(it)
                     it.parent = newDeclaration
@@ -663,9 +663,9 @@ class LocalDeclarationsLowering(
                 name,
                 fieldType,
                 visibility,
-                true,
-                false,
-                false
+                isFinal = true,
+                isExternal = false,
+                isStatic = false
             ).also {
                 descriptor.bind(it)
                 it.parent = parent
@@ -709,11 +709,11 @@ class LocalDeclarationsLowering(
         private fun collectClosures() {
             val annotator = ClosureAnnotator(memberDeclaration)
 
-            localFunctions.forEach { declaration, context ->
+            localFunctions.forEach { (declaration, context) ->
                 context.closure = annotator.getFunctionClosure(declaration)
             }
 
-            localClasses.forEach { declaration, context ->
+            localClasses.forEach { (declaration, context) ->
                 context.closure = annotator.getClassClosure(declaration)
             }
         }
